@@ -1,0 +1,63 @@
+services:
+  # Base de données H2
+  db:
+    image: oscarfonts/h2
+    container_name: ecommerce-db
+    ports:
+      - "1521:1521"
+      - "81:81"
+    environment:
+      - H2_OPTIONS=-ifNotExists -webAllowOthers -tcpAllowOthers
+    volumes:
+      - h2-data:/opt/h2-data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:81 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Spring Boot
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://db:1521/ecommerce
+      - SPRING_DATASOURCE_DRIVER_CLASS=org.h2.Driver
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_H2_CONSOLE_ENABLED=true
+      - SPRING_H2_CONSOLE_PATH=/h2-console
+      - JWT_SECRET=mySecretKey
+      - JWT_EXPIRATION=86400000
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  # Frontend Angular
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: ecommerce-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  h2-data:
+
+networks:
+  app-network:
+    driver: bridge
