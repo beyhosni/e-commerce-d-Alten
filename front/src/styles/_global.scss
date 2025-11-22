@@ -1,0 +1,263 @@
+/* Styles globaux pour l'application */
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --accent-color: #f72585;
+  --success-color: #06ffa5;
+  --warning-color: #ffbe0b;
+  --danger-color: #fb5607;
+  --light-color: #ffffff;
+  --dark-color: #212529;
+  --gray-color: #6c757d;
+  --light-gray: #f8f9fa;
+  --medium-gray: #e9ecef;
+  --dark-gray: #495057;
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--dark-color);
+  background-color: var(--light-gray);
+}
+
+.container {
+  max-width: 1200px;
+  padding: 0 15px;
+}
+
+/* Styles pour les cartes de produits */
+.product-card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.product-image {
+  height: 220px;
+  object-fit: cover;
+  transition: var(--transition-base);
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+.product-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-instock {
+  background-color: var(--success-color);
+  color: var(--dark-color);
+}
+
+.status-lowstock {
+  background-color: var(--warning-color);
+  color: var(--dark-color);
+}
+
+.status-outofstock {
+  background-color: var(--danger-color);
+  color: var(--light-color);
+}
+
+/* Styles pour les boutons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: var(--transition-base);
+  border: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--light-color);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-outline-primary {
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  color: var(--light-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-outline-danger {
+  border: 2px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--danger-color);
+  color: var(--light-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+/* Styles pour les cartes */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  background-color: var(--light-color);
+  border-bottom: 1px solid var(--medium-gray);
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+/* Styles pour les formulaires */
+.form-control {
+  border-radius: 8px;
+  border: 1px solid var(--medium-gray);
+  padding: 10px 15px;
+  transition: var(--transition-base);
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--dark-gray);
+  margin-bottom: 0.5rem;
+}
+
+/* Styles pour la pagination */
+.pagination {
+  margin-top: 2rem;
+}
+
+.pagination .page-link {
+  color: var(--primary-color);
+  border: none;
+  margin: 0 3px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: var(--transition-base);
+}
+
+.pagination .page-link:hover {
+  background-color: var(--light-gray);
+  transform: translateY(-2px);
+}
+
+.pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  box-shadow: var(--shadow-sm);
+}
+
+/* Styles pour la barre de navigation */
+.navbar {
+  box-shadow: var(--shadow-sm);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--light-color) !important;
+}
+
+.nav-link {
+  font-weight: 500;
+  margin: 0 5px;
+  border-radius: 8px;
+  transition: var(--transition-base);
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Animation pour les chargements */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Styles pour les alertes */
+.alert {
+  border: none;
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+}
+
+.alert-success {
+  background-color: rgba(6, 255, 165, 0.2);
+  color: var(--dark-color);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Amélioration de la grille */
+.row {
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.row > * {
+  padding-left: 10px;
+  padding-right: 10px;
+}

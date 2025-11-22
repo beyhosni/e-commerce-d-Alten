@@ -1,0 +1,48 @@
+<div class="register-container">
+  <p-card header="Créer un compte" styleClass="register-card">
+    <form (ngSubmit)="onSubmit()">
+      <div class="p-fluid">
+        <div class="field">
+          <label for="username">Nom d'utilisateur</label>
+          <input pInputText id="username" type="text" [(ngModel)]="registerData.username" name="username" required>
+        </div>
+
+        <div class="field">
+          <label for="firstname">Prénom</label>
+          <input pInputText id="firstname" type="text" [(ngModel)]="registerData.firstname" name="firstname" required>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input pInputText id="email" type="email" [(ngModel)]="registerData.email" name="email" required>
+        </div>
+
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input pInputText id="password" type="password" [(ngModel)]="registerData.password" name="password" required>
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirmer le mot de passe</label>
+          <input pInputText id="confirmPassword" type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <p-button label="S'inscrire" type="submit" [loading]="isLoading"></p-button>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        <p-message severity="error" [text]="errorMessage"></p-message>
+      </div>
+
+      <div *ngIf="successMessage" class="success-message">
+        <p-message severity="success" [text]="successMessage"></p-message>
+      </div>
+    </form>
+
+    <div class="login-link">
+      <p>Vous avez déjà un compte? <a [routerLink]="['/login']">Connectez-vous</a></p>
+    </div>
+  </p-card>
+</div>

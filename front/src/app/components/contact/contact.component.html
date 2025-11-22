@@ -1,0 +1,46 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Contact</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <div class="card">
+        <div class="card-body">
+          <div *ngIf="success" class="alert alert-success">
+            Demande de contact envoyée avec succès
+          </div>
+
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="email" class="form-label">Email *</label>
+              <input type="email" class="form-control" id="email" formControlName="email"
+                     [ngClass]="{ 'is-invalid': submitted && f['email'].errors }">
+              <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+                <div *ngIf="f['email'].errors['required']">L'email est obligatoire</div>
+                <div *ngIf="f['email'].errors['email']">Veuillez entrer un email valide</div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="message" class="form-label">Message *</label>
+              <textarea class="form-control" id="message" rows="5" formControlName="message"
+                        [ngClass]="{ 'is-invalid': submitted && f['message'].errors }"></textarea>
+              <div *ngIf="submitted && f['message'].errors" class="invalid-feedback">
+                <div *ngIf="f['message'].errors['required']">Le message est obligatoire</div>
+                <div *ngIf="f['message'].errors['maxlength']">Le message ne doit pas dépasser 300 caractères</div>
+              </div>
+              <div class="form-text">{{ f['message'].value?.length || 0 }}/300 caractères</div>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">Envoyer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

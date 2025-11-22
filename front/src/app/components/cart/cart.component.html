@@ -1,0 +1,146 @@
+<div class="cart-page py-4">
+  <div class="container">
+    <div class="page-header mb-5">
+      <div class="d-flex align-items-center justify-content-between">
+        <h1 class="page-title">Mon Panier</h1>
+        <a routerLink="/products" class="btn btn-outline-primary">
+          <i class="bi bi-arrow-left me-2"></i>Continuer vos achats
+        </a>
+      </div>
+    </div>
+
+  <!-- Chargement -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Panier vide -->
+  <div *ngIf="!loading && cartItems.length === 0" class="empty-cart-section py-5">
+    <div class="container text-center">
+      <div class="empty-cart-icon mb-4">
+        <i class="bi bi-cart-x display-1 text-muted"></i>
+      </div>
+      <h2 class="mb-3">Votre panier est vide</h2>
+      <p class="text-muted mb-4">Ajoutez des produits à votre panier pour continuer vos achats</p>
+      <a routerLink="/products" class="btn btn-primary btn-lg px-4">
+        <i class="bi bi-bag me-2"></i>Découvrir nos produits
+      </a>
+    </div>
+  </div>
+
+  <!-- Panier avec produits -->
+  <div *ngIf="!loading && cartItems.length > 0">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Produits ({{ cartItems.length }})</h5>
+          </div>
+          <div class="card-body">
+            <div *ngFor="let item of cartItems" class="row mb-4 align-items-center">
+              <div class="col-md-2">
+                <img [src]="item.product.image" class="img-fluid rounded" [alt]="item.product.name">
+              </div>
+              <div class="col-md-4">
+                <h5>{{ item.product.name }}</h5>
+                <p class="text-muted">{{ item.product.description }}</p>
+                <div>
+                  <span class="badge bg-primary">{{ item.product.category }}</span>
+                  <span class="badge bg-secondary ms-1">{{ item.product.inventoryStatus }}</span>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="input-group">
+                  <button class="btn btn-outline-secondary" type="button" 
+                          (click)="updateQuantity(item.product.id, item.quantity - 1)">
+                    <i class="bi bi-dash"></i>
+                  </button>
+                  <input type="number" class="form-control text-center" [value]="item.quantity" readonly>
+                  <button class="btn btn-outline-secondary" type="button" 
+                          (click)="updateQuantity(item.product.id, item.quantity + 1)">
+                    <i class="bi bi-plus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-2 text-center">
+                <h5>{{ item.product.price | currency:'EUR' }}</h5>
+              </div>
+              <div class="col-md-2 text-center">
+                <button class="btn btn-outline-danger" (click)="removeItem(item.product.id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              <div class="col-12">
+                <hr>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="cart-summary-card">
+          <div class="card-header bg-white border-bottom">
+            <h5 class="mb-0 fw-bold">Récapitulatif de la commande</h5>
+          </div>
+          <div class="card-body p-4">
+            <div class="summary-row d-flex justify-content-between">
+              <span class="summary-label">Sous-total ({{ getCartItemCount() }} articles)</span>
+              <span class="summary-value">{{ totalAmount | currency:'EUR' }}</span>
+            </div>
+            <div class="summary-row d-flex justify-content-between">
+              <span class="summary-label">Livraison</span>
+              <span class="summary-value">Gratuite</span>
+            </div>
+            <div class="summary-row d-flex justify-content-between">
+              <span class="summary-label">Taxes</span>
+              <span class="summary-value">Incluses</span>
+            </div>
+            <div class="total-row d-flex justify-content-between align-items-center">
+              <span class="total-label">Total</span>
+              <span class="total-value">{{ totalAmount | currency:'EUR' }}</span>
+            </div>
+            <div class="mt-4">
+              <button class="btn btn-primary checkout-btn w-100" (click)="checkout()">
+                <i class="bi bi-lock-fill me-2"></i>Procéder au paiement sécurisé
+              </button>
+              <p class="text-center text-muted small mt-3 mb-0">
+                <i class="bi bi-shield-check me-1"></i>Paiement 100% sécurisé
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-top">
+              <div class="d-flex justify-content-center gap-3">
+                <i class="bi bi-credit-card text-muted" style="font-size: 1.5rem;"></i>
+                <i class="bi bi-paypal text-muted" style="font-size: 1.5rem;"></i>
+                <i class="bi bi-apple text-muted" style="font-size: 1.5rem;"></i>
+                <i class="bi bi-google text-muted" style="font-size: 1.5rem;"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card mt-4 security-card">
+          <div class="card-body p-4 text-center">
+            <h6 class="fw-bold mb-3">Garantie ALTEN SHOP</h6>
+            <div class="d-flex justify-content-around mb-3">
+              <div>
+                <i class="bi bi-truck text-primary" style="font-size: 1.5rem;"></i>
+                <p class="small mb-0 mt-1">Livraison offerte</p>
+              </div>
+              <div>
+                <i class="bi bi-arrow-repeat text-primary" style="font-size: 1.5rem;"></i>
+                <p class="small mb-0 mt-1">Retour sous 30j</p>
+              </div>
+              <div>
+                <i class="bi bi-headset text-primary" style="font-size: 1.5rem;"></i>
+                <p class="small mb-0 mt-1">Support 24/7</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

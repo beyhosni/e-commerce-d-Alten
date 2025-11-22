@@ -1,0 +1,740 @@
+openapi: 3.0.0
+info:
+  title: API E-commerce Alten
+  description: API pour le site e-commerce d'Alten
+  version: 1.0.0
+  contact:
+    name: Alten
+    email: contact@alten.com
+    url: https://www.alten.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  - url: http://localhost:8080
+    description: Serveur de développement
+paths:
+  /api/account:
+    post:
+      summary: Créer un compte utilisateur
+      description: Crée un nouveau compte utilisateur avec les informations fournies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Compte créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Données invalides ou email déjà utilisé
+  /api/token:
+    post:
+      summary: Se connecter
+      description: Authentifie un utilisateur et retourne un token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Authentification réussie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Identifiants invalides
+  /api/products:
+    get:
+      summary: Récupérer tous les produits
+      description: Retourne la liste de tous les produits disponibles
+      responses:
+        '200':
+          description: Liste des produits récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDto'
+    post:
+      summary: Créer un nouveau produit
+      description: Ajoute un nouveau produit à la base de données
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductDto'
+      responses:
+        '201':
+          description: Produit créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '403':
+          description: Accès refusé - seul admin@admin.com peut créer des produits
+  /api/products/{id}:
+    get:
+      summary: Récupérer un produit par son ID
+      description: Retourne un produit spécifique en fonction de son ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du produit à récupérer
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Produit trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Produit non trouvé
+    put:
+      summary: Mettre à jour un produit
+      description: Met à jour les informations d'un produit existant
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du produit à mettre à jour
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductDto'
+      responses:
+        '200':
+          description: Produit mis à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDto'
+        '404':
+          description: Produit non trouvé
+        '403':
+          description: Accès refusé - seul admin@admin.com peut mettre à jour des produits
+    delete:
+      summary: Supprimer un produit
+      description: Supprime un produit de la base de données
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID du produit à supprimer
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Produit supprimé avec succès
+        '404':
+          description: Produit non trouvé
+        '403':
+          description: Accès refusé - seul admin@admin.com peut supprimer des produits
+  /api/products/category/{category}:
+    get:
+      summary: Récupérer les produits par catégorie
+      description: Retourne la liste des produits d'une catégorie spécifique
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: Catégorie des produits à récupérer
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Liste des produits de la catégorie récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDto'
+  /api/products/status/{status}:
+    get:
+      summary: Récupérer les produits par statut d'inventaire
+      description: Retourne la liste des produits selon leur statut d'inventaire
+      parameters:
+        - name: status
+          in: path
+          required: true
+          description: Statut d'inventaire des produits à récupérer
+          schema:
+            type: string
+            enum: [INSTOCK, LOWSTOCK, OUTOFSTOCK]
+      responses:
+        '200':
+          description: Liste des produits récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDto'
+  /api/cart:
+    get:
+      summary: Récupérer le panier d'achat
+      description: Retourne la liste des produits dans le panier de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Panier récupéré avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItemDto'
+    post:
+      summary: Ajouter un produit au panier
+      description: Ajoute un produit au panier de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          description: ID du produit à ajouter
+          schema:
+            type: integer
+            format: int64
+        - name: quantity
+          in: query
+          required: true
+          description: Quantité à ajouter
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Produit ajouté au panier avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItemDto'
+        '400':
+          description: Produit non trouvé
+    delete:
+      summary: Supprimer un produit du panier
+      description: Supprime un produit du panier de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          description: ID du produit à supprimer
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Produit supprimé du panier avec succès
+        '400':
+          description: Produit non trouvé
+    put:
+      summary: Mettre à jour la quantité d'un produit dans le panier
+      description: Met à jour la quantité d'un produit dans le panier de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          description: ID du produit à mettre à jour
+          schema:
+            type: integer
+            format: int64
+        - name: quantity
+          in: query
+          required: true
+          description: Nouvelle quantité
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Quantité mise à jour avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItemDto'
+        '400':
+          description: Produit non trouvé dans le panier
+  /api/wishlist:
+    get:
+      summary: Récupérer la liste d'envies
+      description: Retourne la liste des produits dans la liste d'envies de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Liste d'envies récupérée avec succès
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WishlistItemDto'
+    post:
+      summary: Ajouter un produit à la liste d'envies
+      description: Ajoute un produit à la liste d'envies de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          description: ID du produit à ajouter
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '201':
+          description: Produit ajouté à la liste d'envies avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItemDto'
+        '400':
+          description: Produit non trouvé ou déjà dans la liste d'envies
+    delete:
+      summary: Supprimer un produit de la liste d'envies
+      description: Supprime un produit de la liste d'envies de l'utilisateur connecté
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          description: ID du produit à supprimer
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Produit supprimé de la liste d'envies avec succès
+        '400':
+          description: Produit non trouvé
+components:
+  schemas:
+    ProductDto:
+      type: object
+      description: Représente un produit
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique du produit
+          example: 1
+        code:
+          type: string
+          description: Code du produit
+          example: PROD001
+        name:
+          type: string
+          description: Nom du produit
+          example: Smartphone X
+        description:
+          type: string
+          description: Description du produit
+          example: Un smartphone dernière génération
+        image:
+          type: string
+          description: URL de l'image du produit
+          example: https://example.com/image.jpg
+        category:
+          type: string
+          description: Catégorie du produit
+          example: Électronique
+        price:
+          type: number
+          format: double
+          description: Prix du produit
+          example: 699.99
+        quantity:
+          type: integer
+          description: Quantité en stock
+          example: 50
+        internalReference:
+          type: string
+          description: Référence interne
+          example: REF-12345
+        shellId:
+          type: integer
+          description: ID du coque
+          example: 5
+        inventoryStatus:
+          type: string
+          description: Statut du stock
+          enum: [INSTOCK, LOWSTOCK, OUTOFSTOCK]
+          example: INSTOCK
+        rating:
+          type: integer
+          description: Note du produit
+          example: 4
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    UserDto:
+      type: object
+      description: Représente un utilisateur
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'utilisateur
+          example: 1
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+        email:
+          type: string
+          description: Email de l'utilisateur
+          example: john.doe@example.com
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    AuthRequest:
+      type: object
+      description: Requête d'authentification
+      properties:
+        email:
+          type: string
+          description: Email de l'utilisateur
+          example: user@example.com
+        password:
+          type: string
+          description: Mot de passe
+          example: password123
+      required:
+        - email
+        - password
+    AuthResponse:
+      type: object
+      description: Réponse d'authentification
+      properties:
+        token:
+          type: string
+          description: Token JWT
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type:
+          type: string
+          description: Type de token
+          example: Bearer
+        id:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        email:
+          type: string
+          description: Email de l'utilisateur
+          example: user@example.com
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+    RegisterRequest:
+      type: object
+      description: Requête d'inscription
+      properties:
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+        email:
+          type: string
+          description: Email de l'utilisateur
+          example: john.doe@example.com
+        password:
+          type: string
+          description: Mot de passe
+          example: password123
+      required:
+        - username
+        - firstname
+        - email
+        - password
+    CartItemDto:
+      type: object
+      description: Représente un élément du panier d'achat
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'élément du panier
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        product:
+          $ref: '#/components/schemas/ProductDto'
+        quantity:
+          type: integer
+          description: Quantité
+          example: 2
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    WishlistItemDto:
+      type: object
+      description: Représente un élément de la liste d'envies
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'élément de la liste d'envies
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        product:
+          $ref: '#/components/schemas/ProductDto'
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenu via l'endpoint /api/token
+          description: Note du produit
+          example: 4
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    UserDto:
+      type: object
+      description: Représente un utilisateur
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'utilisateur
+          example: 1
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: john.doe@example.com
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    AuthRequest:
+      type: object
+      description: Requête d'authentification
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: user@example.com
+        password:
+          type: string
+          description: Mot de passe
+          example: password123
+    AuthResponse:
+      type: object
+      description: Réponse d'authentification
+      properties:
+        token:
+          type: string
+          description: Token JWT
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type:
+          type: string
+          description: Type de token
+          example: Bearer
+        id:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: user@example.com
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+    RegisterRequest:
+      type: object
+      description: Requête d'inscription
+      required:
+        - username
+        - firstname
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          description: Nom d'utilisateur
+          example: johndoe
+        firstname:
+          type: string
+          description: Prénom de l'utilisateur
+          example: John
+        email:
+          type: string
+          format: email
+          description: Email de l'utilisateur
+          example: john.doe@example.com
+        password:
+          type: string
+          description: Mot de passe
+          example: password123
+    CartItemDto:
+      type: object
+      description: Représente un élément du panier d'achat
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'élément du panier
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        product:
+          $ref: '#/components/schemas/ProductDto'
+        quantity:
+          type: integer
+          description: Quantité
+          example: 2
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+        updatedAt:
+          type: integer
+          format: int64
+          description: Date de mise à jour (timestamp)
+          example: 1625184000000
+    WishlistItemDto:
+      type: object
+      description: Représente un élément de la liste d'envies
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Identifiant unique de l'élément de la liste d'envies
+          example: 1
+        userId:
+          type: integer
+          format: int64
+          description: ID de l'utilisateur
+          example: 1
+        product:
+          $ref: '#/components/schemas/ProductDto'
+        createdAt:
+          type: integer
+          format: int64
+          description: Date de création (timestamp)
+          example: 1625097600000
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtenu via l'endpoint /api/token

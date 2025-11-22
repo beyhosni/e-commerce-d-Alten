@@ -1,0 +1,214 @@
+<div class="products-page">
+  <div class="page-header mb-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <h1 class="page-title">Découvrez nos produits</h1>
+          <p class="page-subtitle text-muted">Des produits de qualité pour tous vos besoins</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+          <div class="view-options d-inline-flex align-items-center bg-white rounded-pill p-1 shadow-sm">
+            <button class="btn btn-sm rounded-pill active" type="button">
+              <i class="pi pi-th-large"></i>
+            </button>
+            <button class="btn btn-sm rounded-pill" type="button">
+              <i class="pi pi-bars"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters-section mb-4">
+    <div class="container">
+      <div class="filters-card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Filtres</h5>
+          <button class="btn btn-sm btn-light" (click)="clearFilters()">
+            <i class="pi pi-refresh me-1"></i> Réinitialiser
+          </button>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="categoryFilter" class="form-label fw-semibold">Catégorie</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="pi pi-tag"></i>
+                </span>
+                <select class="form-select border-start-0" id="categoryFilter" [(ngModel)]="selectedCategory" (change)="applyFilters()">
+                  <option value="">Toutes les catégories</option>
+                  <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="statusFilter" class="form-label fw-semibold">Disponibilité</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="pi pi-check-circle"></i>
+                </span>
+                <select class="form-select border-start-0" id="statusFilter" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+                  <option value="">Tous les statuts</option>
+                  <option value="INSTOCK">En stock</option>
+                  <option value="LOWSTOCK">Stock limité</option>
+                  <option value="OUTOFSTOCK">Rupture de stock</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label for="sortFilter" class="form-label fw-semibold">Tri</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0">
+                  <i class="pi pi-sort-amount-down"></i>
+                </span>
+                <select class="form-select border-start-0" id="sortFilter" [(ngModel)]="selectedSort" (change)="applyFilters()">
+                  <option value="">Par défaut</option>
+                  <option value="price-asc">Prix croissant</option>
+                  <option value="price-desc">Prix décroissant</option>
+                  <option value="name-asc">Nom A-Z</option>
+                  <option value="name-desc">Nom Z-A</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chargement -->
+  <div *ngIf="loading" class="loading-section py-5">
+    <div class="container text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+      <p class="mt-3 text-muted">Chargement des produits...</p>
+    </div>
+  </div>
+
+  <!-- Liste des produits -->
+  <div *ngIf="!loading" class="products-section">
+    <div class="container">
+      <div class="row g-4">
+        <div *ngFor="let product of paginatedProducts" class="col-md-6 col-lg-4">
+          <div class="card h-100 product-card position-relative overflow-hidden">
+            <div class="product-image-container position-relative overflow-hidden">
+              <img [src]="product.image" class="card-img-top product-image" [alt]="product.name">
+              <div class="product-badges position-absolute top-0 start-0 p-2">
+                <span class="badge product-badge me-1" [ngClass]="getInventoryStatusClass(product.inventoryStatus)">
+                  {{ getInventoryStatusText(product.inventoryStatus) }}
+                </span>
+              </div>
+              <div class="product-actions position-absolute top-0 end-0 p-2 d-flex flex-column gap-2 opacity-0">
+                <button class="btn btn-sm btn-light rounded-circle shadow-sm" (click)="toggleWishlist(product.id)">
+                  <i [ngClass]="wishlistItems[product.id] ? 'bi bi-heart-fill text-danger' : 'bi bi-heart'"></i>
+                </button>
+                <button class="btn btn-sm btn-light rounded-circle shadow-sm" (click)="quickView(product)">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body d-flex flex-column p-3">
+              <div class="mb-2">
+                <span class="badge bg-light text-dark me-1">{{ product.category }}</span>
+              </div>
+              <h5 class="card-title fw-bold">{{ product.name }}</h5>
+              <p class="card-text text-muted small">{{ product.description }}</p>
+              <div class="product-rating mb-2">
+                <div class="d-flex align-items-center">
+                  <div class="me-2">
+                    <i *ngFor="let star of [].constructor(Math.floor(product.rating))" class="bi bi-star-fill text-warning"></i>
+                    <i *ngIf="product.rating % 1 !== 0" class="bi bi-star-half text-warning"></i>
+                    <i *ngFor="let star of [].constructor(5 - Math.ceil(product.rating))" class="bi bi-star text-warning"></i>
+                  </div>
+                  <span class="text-muted small">({{ product.rating }})</span>
+                </div>
+              </div>
+              <div class="mt-auto">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="product-price h4 mb-0 text-primary fw-bold">{{ product.price | currency:'EUR' }}</span>
+                </div>
+
+            <!-- Gestion de la quantité dans le panier -->
+            <div *ngIf="cartQuantities[product.id] > 0" class="mb-3">
+              <div class="input-group">
+                <button class="btn btn-outline-secondary" type="button" (click)="updateCartQuantity(product.id, cartQuantities[product.id] - 1)">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <input type="number" class="form-control text-center" [value]="cartQuantities[product.id]" readonly>
+                <button class="btn btn-outline-secondary" type="button" (click)="updateCartQuantity(product.id, cartQuantities[product.id] + 1)">
+                  <i class="bi bi-plus"></i>
+                </button>
+                <button class="btn btn-outline-danger" type="button" (click)="removeFromCart(product.id)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="d-grid gap-2">
+              <button *ngIf="cartQuantities[product.id] === 0" class="btn btn-primary" 
+                      (click)="addToCart(product.id)" 
+                      [disabled]="product.inventoryStatus === 'OUTOFSTOCK'">
+                <i class="bi bi-cart-plus me-2"></i>Ajouter au panier
+              </button>
+              <button class="btn btn-outline-danger" 
+                      (click)="toggleWishlist(product.id)">
+                <i [ngClass]="wishlistItems[product.id] ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                {{ wishlistItems[product.id] ? 'Retirer de la liste d\'envies' : 'Ajouter à la liste d\'envies' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav *ngIf="totalPages > 1" aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <a class="page-link" href="#" (click)="changePage(currentPage - 1); $event.preventDefault()">Précédent</a>
+      </li>
+      <li *ngFor="let page of [].constructor(totalPages).fill(0).map((x,i)=>i+1)" 
+          class="page-item" [class.active]="page === currentPage">
+        <a class="page-link" href="#" (click)="changePage(page); $event.preventDefault()">{{ page }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <a class="page-link" href="#" (click)="changePage(currentPage + 1); $event.preventDefault()">Suivant</a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- Styles -->
+<style>
+.product-card {
+  transition: transform 0.3s;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.product-image {
+  height: 200px;
+  object-fit: cover;
+}
+
+.status-instock {
+  background-color: #28a745;
+}
+
+.status-lowstock {
+  background-color: #ffc107;
+}
+
+.status-outofstock {
+  background-color: #dc3545;
+}
+</style>
