@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+@CrossOrigin(origins = {"http://localhost:80", "http://127.0.0.1:80", "http://localhost", "http://127.0.0.1"})
 @RestController
 @RequestMapping("/api/wishlist")
 @SecurityRequirement(name = "bearerAuth")
