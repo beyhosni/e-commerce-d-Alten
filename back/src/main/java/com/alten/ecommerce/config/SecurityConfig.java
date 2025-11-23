@@ -68,7 +68,7 @@ public class SecurityConfig {
                 return org.springframework.security.core.userdetails.User.builder()
                         .username(user.getEmail())
                         .password(user.getPassword())
-                        .roles("USER")
+                        .roles(email.equals("admin@admin.com") ? "ADMIN" : "USER")
                         .build();
             }
         };

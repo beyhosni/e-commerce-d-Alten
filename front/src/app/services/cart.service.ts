@@ -1,57 +1,77 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Injectable, computed, signal, effect } from '@angular/core';
 import { Product } from './product.service';
 
 export interface CartItem {
-  id: number;
-  userId: number;
   product: Product;
   quantity: number;
-  createdAt: number;
-  updatedAt: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private apiUrl = 'http://localhost:8080/api/cart';
+  // Signal pour l'état du panier
+  private cartItems = signal<CartItem[]>([]);
 
-  constructor(private http: HttpClient) { }
+  // Signaux calculés
+  cartCount = computed(() => this.cartItems().reduce((acc, item) => acc + item.quantity, 0));
+  cartTotal = computed(() => this.cartItems().reduce((acc, item) => acc + (item.product.price * item.quantity), 0));
 
-  getCart(): Observable<CartItem[]> {
-    return this.http.get<CartItem[]>(this.apiUrl);
-  }
+  constructor() {
+    // Charger le panier depuis le localStorage au démarrage
+    const savedCart = localStorage.getItem('cart');
+    if (savedCart) {
+      try {
+        this.cartItems.set(JSON.parse(savedCart));
+      } catch (e) {
+        console.error('Error parsing cart from local storage', e);
+      }
+    }
 
-  addToCart(productId: number, quantity: number): Observable<CartItem> {
-    return this.http.post<CartItem>(`${this.apiUrl}?productId=${productId}&quantity=${quantity}`, {});
-  }
-
-  removeFromCart(productId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}?productId=${productId}`);
-  }
-
-  updateCartItemQuantity(productId: number, quantity: number): Observable<CartItem> {
-    return this.http.put<CartItem>(`${this.apiUrl}?productId=${productId}&quantity=${quantity}`, {});
-  }
-
-  getCartItemCount(): Observable<number> {
-    return new Observable<number>(observer => {
-      this.getCart().subscribe(items => {
-        const count = items.reduce((total, item) => total + item.quantity, 0);
-        observer.next(count);
-        observer.complete();
-      }, error => {
-        observer.error(error);
-      });
+    // Sauvegarder le panier dans le localStorage à chaque changement
+    effect(() => {
+      localStorage.setItem('cart', JSON.stringify(this.cartItems()));
     });
   }
 
-  private cartItemCountSubject = new BehaviorSubject<number>(0);
-  cartItemCount$ = this.cartItemCountSubject.asObservable();
+  getCartItems() {
+    return this.cartItems.asReadonly();
+  }
 
-  updateCartBadge(count: number): void {
-    this.cartItemCountSubject.next(count);
+  addToCart(product: Product, quantity: number = 1) {
+    this.cartItems.update(items => {
+      const existingItem = items.find(item => item.product.id === product.id);
+      if (existingItem) {
+        return items.map(item => 
+          item.product.id === product.id 
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...items, { product, quantity }];
+    });
+  }
+
+  removeFromCart(productId: number) {
+    this.cartItems.update(items => items.filter(item => item.product.id !== productId));
+  }
+
+  updateQuantity(productId: number, quantity: number) {
+    if (quantity <= 0) {
+      this.removeFromCart(productId);
+      return;
+    }
+    
+    this.cartItems.update(items => 
+      items.map(item => 
+        item.product.id === productId 
+          ? { ...item, quantity }
+          : item
+      )
+    );
+  }
+
+  clearCart() {
+    this.cartItems.set([]);
   }
 }

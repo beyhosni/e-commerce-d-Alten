@@ -20,17 +20,13 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthService } from './services/auth.service';
 
-];
-
 @NgModule({
   declarations: [
     AppComponent,
     HeaderComponent,
     ProductListComponent,
     CartComponent,
-    ContactComponent,
-    LoginComponent,
-    RegisterComponent
+    ContactComponent
   ],
   imports: [
     BrowserModule,

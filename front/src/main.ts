@@ -34,8 +34,6 @@ bootstrapApplication(AppComponent, {
     MessageService,
     DialogService,
     AuthService,
-    LoginComponent,
-    RegisterComponent,
   ],
 }).catch((err) => console.log(err));
 
